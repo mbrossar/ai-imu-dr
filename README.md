@@ -53,7 +53,7 @@ rm download
 4. Test the filters !
 ```
 cd ai-imu-dr/src
-python3 main.py
+python3 main_kitti.py
 ```
 This first launches the filters for the all sequences. Then, results are plotted. Note that the parameters are  trained on sequences 00, 01, 04-11, so only sequence 02 is a test sequence.
 
