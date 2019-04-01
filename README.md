@@ -39,6 +39,7 @@ git clone https://github.com/mbrossard/ai-imu-dr
 1. Download reformated pickle format of the 00-11 KITTI IMU raw data at this [url](https://cloud.mines-paristech.fr/index.php/s/BemfXfIMdQSEEC7/download), extract and copy then in the `data` folder.
 ```
 wget "https://cloud.mines-paristech.fr/index.php/s/BemfXfIMdQSEEC7/download"
+mkdir ai-imu-dr/data
 unzip download -d ai-imu-dr/data
 rm download
 ```
@@ -52,6 +53,7 @@ rm download
 ```
 4. Test the filters !
 ```
+ai-imu-dr/results
 cd ai-imu-dr/src
 python3 main_kitti.py
 ```
