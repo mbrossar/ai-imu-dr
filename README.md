@@ -64,7 +64,6 @@ You can train for testing another sequence (we do not find difference in the res
 ## Paper
 The paper _AI-IMU Dead-Reckoning, M. Brossard, A. Barrau and S. Bonnabel. 2019_, relative to this repo is available at this [url](https://cloud.mines-paristech.fr/index.php/s/8YDqD0Y1e6BWzCG).
 
-<> You can also download it from the HAL platform following this [link]().
 
 ### Citation
 
