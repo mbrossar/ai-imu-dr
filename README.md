@@ -1,4 +1,4 @@
-# AI-IMU Dead-Reckoning
+# AI-IMU Dead-Reckoning [[paper]](https://cloud.mines-paristech.fr/index.php/s/8YDqD0Y1e6BWzCG)
 
 _1.10%_ translational error on the [KITTI](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) odometry sequences with __only__ an Inertial Measurement Unit.
 
