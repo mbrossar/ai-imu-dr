@@ -32,7 +32,7 @@ pip3 install matplotlib numpy termcolor scipy navpy
     
 4.  Clone this repo
 ```
-git clone https://github.com/mbrossard/ai-imu-dr
+git clone https://github.com/mbrossar/ai-imu-dr.git
 ```
 
 ### Testing
