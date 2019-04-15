@@ -89,6 +89,9 @@ def prepare_filter(args, dataset):
 
 
 def prepare_loss_data(args, dataset):
+
+
+
     file_delta_p = os.path.join(args.path_temp, 'delta_p.p')
     if os.path.isfile(file_delta_p):
         mondict = dataset.load(file_delta_p)
@@ -101,14 +104,20 @@ def prepare_loss_data(args, dataset):
     for dataset_name, Ns in dataset.datasets_train_filter.items():
         t, ang_gt, p_gt, v_gt, u = prepare_data(args, dataset, dataset_name, 0)
         p_gt = p_gt.double()
-        Rot_gt = TORCHIEKF.from_rpy(ang_gt[: Ns[1]]).double()
+        Rot_gt = torch.zeros(Ns[1], 3, 3)
+        for k in range(Ns[1]):
+            ang_k = ang_gt[k]
+            Rot_gt[k] = TORCHIEKF.from_rpy(ang_k[0], ang_k[1], ang_k[2]).double()
         list_rpe[dataset_name] = compute_delta_p(Rot_gt[:Ns[1]], p_gt[:Ns[1]])
 
     list_rpe_validation = {}
     for dataset_name, Ns in dataset.datasets_validatation_filter.items():
         t, ang_gt, p_gt, v_gt, u = prepare_data(args, dataset, dataset_name, 0)
         p_gt = p_gt.double()
-        Rot_gt = TORCHIEKF.from_rpy(ang_gt[: Ns[1]]).double()
+        Rot_gt = torch.zeros(Ns[1], 3, 3)
+        for k in range(Ns[1]):
+            ang_k = ang_gt[k]
+            Rot_gt[k] = TORCHIEKF.from_rpy(ang_k[0], ang_k[1], ang_k[2]).double()
         list_rpe_validation[dataset_name] = compute_delta_p(Rot_gt[:Ns[1]], p_gt[:Ns[1]])
     dataset.list_rpe = list_rpe
     dataset.list_rpe_validation = list_rpe_validation
