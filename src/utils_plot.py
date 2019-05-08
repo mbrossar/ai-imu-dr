@@ -1,11 +1,8 @@
 import matplotlib
 import os
-matplotlib.rcParams['text.usetex'] = True
-matplotlib.rcParams['axes.titlesize'] = 'x-large'
 from termcolor import cprint
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import rc
 from itertools import chain
 from utils import *
 from utils_torch_filter import TORCHIEKF
