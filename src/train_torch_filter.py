@@ -147,8 +147,9 @@ def train_loop(args, dataset, epoch, iekf, optimizer, seq_dim):
             loss_train += loss
             cprint("{} loss: {:.5f}".format(i, loss))
 
-
-    loss_train.cuda().backward()
+    if loss_train == 0: 
+        return 
+    loss_train.backward()  # loss_train.cuda().backward()  
     g_norm = torch.nn.utils.clip_grad_norm_(iekf.parameters(), max_grad_norm)
     if np.isnan(g_norm) or g_norm > 3*max_grad_norm:
         cprint("gradient norm: {:.5f}".format(g_norm), 'yellow')
@@ -175,6 +176,8 @@ def mini_batch_step(dataset, dataset_name, iekf, list_rpe, t, ang_gt, p_gt, v_gt
                                                             v_gt, p_gt, t.shape[0],
                                                             ang_gt[0])
     delta_p, delta_p_gt = precompute_lost(Rot, p, list_rpe, N0)
+    if delta_p is None:
+        return 0
     loss = criterion(delta_p, delta_p_gt)
     return loss
 
@@ -240,7 +243,10 @@ def precompute_lost(Rot, p, list_rpe, N0):
     delta_p_gt = delta_p_gt[idxs]
     idxs_end_bis = idxs_end[idxs]
     idxs_0_bis = idxs_0[idxs]
-    delta_p = Rot_10_Hz[idxs_0_bis].transpose(-1, -2).matmul(
+    if len(idxs_0_bis) is 0: 
+        return       
+    else:
+        delta_p = Rot_10_Hz[idxs_0_bis].transpose(-1, -2).matmul(
         (p_10_Hz[idxs_end_bis] - p_10_Hz[idxs_0_bis]).unsqueeze(-1)).squeeze()
-    distance = delta_p_gt.norm(dim=1).unsqueeze(-1)
-    return delta_p / distance, delta_p_gt / distance
+        distance = delta_p_gt.norm(dim=1).unsqueeze(-1)
+        return delta_p.double() / distance.double(), delta_p_gt.double() / distance.double() 
