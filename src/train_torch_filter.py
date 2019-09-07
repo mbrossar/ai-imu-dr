@@ -97,7 +97,8 @@ def prepare_loss_data(args, dataset):
         mondict = dataset.load(file_delta_p)
         dataset.list_rpe = mondict['list_rpe']
         dataset.list_rpe_validation = mondict['list_rpe_validation']
-        return
+        if set(dataset.datasets_train_filter.keys()) <= set(dataset.list_rpe.keys()): 
+            return
 
     # prepare delta_p_gt
     list_rpe = {}
@@ -137,8 +138,8 @@ def train_loop(args, dataset, epoch, iekf, optimizer, seq_dim):
         loss = mini_batch_step(dataset, dataset_name, iekf,
                                dataset.list_rpe[dataset_name], t, ang_gt, p_gt, v_gt, u, N0)
 
-        if loss is 0 or torch.isnan(loss):
-            cprint("{} loss is 0 or nan".format(i), 'yellow')
+        if loss is -1 or torch.isnan(loss):
+            cprint("{} loss is invalid".format(i), 'yellow')
             continue
         elif loss > max_loss:
             cprint("{} loss is too high {:.5f}".format(i, loss), 'yellow')
@@ -177,7 +178,7 @@ def mini_batch_step(dataset, dataset_name, iekf, list_rpe, t, ang_gt, p_gt, v_gt
                                                             ang_gt[0])
     delta_p, delta_p_gt = precompute_lost(Rot, p, list_rpe, N0)
     if delta_p is None:
-        return 0
+        return -1
     loss = criterion(delta_p, delta_p_gt)
     return loss
 
@@ -244,7 +245,7 @@ def precompute_lost(Rot, p, list_rpe, N0):
     idxs_end_bis = idxs_end[idxs]
     idxs_0_bis = idxs_0[idxs]
     if len(idxs_0_bis) is 0: 
-        return       
+        return None, None     
     else:
         delta_p = Rot_10_Hz[idxs_0_bis].transpose(-1, -2).matmul(
         (p_10_Hz[idxs_end_bis] - p_10_Hz[idxs_0_bis]).unsqueeze(-1)).squeeze()
