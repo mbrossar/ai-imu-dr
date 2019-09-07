@@ -51,7 +51,7 @@ def compute_delta_p(Rot, p):
         idxs_0 = list_rpe[0]
         idxs_end = list_rpe[1]
         delta_p = Rot[idxs_0].transpose(-1, -2).matmul(
-            (p[idxs_end] - p[idxs_0]).unsqueeze(-1)).squeeze()
+            ((p[idxs_end] - p[idxs_0]).float()).unsqueeze(-1)).squeeze()
         list_rpe[2] = delta_p
     return list_rpe
 
@@ -137,8 +137,8 @@ def train_loop(args, dataset, epoch, iekf, optimizer, seq_dim):
         loss = mini_batch_step(dataset, dataset_name, iekf,
                                dataset.list_rpe[dataset_name], t, ang_gt, p_gt, v_gt, u, N0)
 
-        if torch.isnan(loss):
-            cprint("{} loss is nan".format(i), 'yellow')
+        if loss is 0 or torch.isnan(loss):
+            cprint("{} loss is 0 or nan".format(i), 'yellow')
             continue
         elif loss > max_loss:
             cprint("{} loss is too high {:.5f}".format(i, loss), 'yellow')
