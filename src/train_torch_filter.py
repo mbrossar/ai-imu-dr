@@ -6,7 +6,7 @@ import numpy as np
 from termcolor import cprint
 from utils_torch_filter import TORCHIEKF
 from utils import prepare_data
-
+import copy
 
 max_loss = 2e1
 max_grad_norm = 1e0
@@ -51,7 +51,7 @@ def compute_delta_p(Rot, p):
         idxs_0 = list_rpe[0]
         idxs_end = list_rpe[1]
         delta_p = Rot[idxs_0].transpose(-1, -2).matmul(
-            (p[idxs_end] - p[idxs_0]).unsqueeze(-1)).squeeze()
+            ((p[idxs_end] - p[idxs_0]).float()).unsqueeze(-1)).squeeze()
         list_rpe[2] = delta_p
     return list_rpe
 
@@ -97,7 +97,8 @@ def prepare_loss_data(args, dataset):
         mondict = dataset.load(file_delta_p)
         dataset.list_rpe = mondict['list_rpe']
         dataset.list_rpe_validation = mondict['list_rpe_validation']
-        return
+        if set(dataset.datasets_train_filter.keys()) <= set(dataset.list_rpe.keys()): 
+            return
 
     # prepare delta_p_gt
     list_rpe = {}
@@ -119,8 +120,26 @@ def prepare_loss_data(args, dataset):
             ang_k = ang_gt[k]
             Rot_gt[k] = TORCHIEKF.from_rpy(ang_k[0], ang_k[1], ang_k[2]).double()
         list_rpe_validation[dataset_name] = compute_delta_p(Rot_gt[:Ns[1]], p_gt[:Ns[1]])
-    dataset.list_rpe = list_rpe
-    dataset.list_rpe_validation = list_rpe_validation
+    
+    list_rpe_ = copy.deepcopy(list_rpe)
+    dataset.list_rpe = {}
+    for dataset_name, rpe in list_rpe_.items():
+        if len(rpe[0]) is not 0:
+            dataset.list_rpe[dataset_name] = list_rpe[dataset_name]
+        else:
+            dataset.datasets_train_filter.pop(dataset_name)
+            list_rpe.pop(dataset_name)
+            cprint("%s has too much dirty data, it's removed from training list" % dataset_name, 'yellow')
+
+    list_rpe_validation_ = copy.deepcopy(list_rpe_validation)
+    dataset.list_rpe_validation = {}
+    for dataset_name, rpe in list_rpe_validation_.items():
+        if len(rpe[0]) is not 0:
+            dataset.list_rpe_validation[dataset_name] = list_rpe_validation[dataset_name]
+        else:
+            dataset.datasets_validatation_filter.pop(dataset_name)
+            list_rpe_validation.pop(dataset_name)
+            cprint("%s has too much dirty data, it's removed from validation list" % dataset_name, 'yellow')
     mondict = {
         'list_rpe': list_rpe, 'list_rpe_validation': list_rpe_validation,
         }
@@ -137,8 +156,8 @@ def train_loop(args, dataset, epoch, iekf, optimizer, seq_dim):
         loss = mini_batch_step(dataset, dataset_name, iekf,
                                dataset.list_rpe[dataset_name], t, ang_gt, p_gt, v_gt, u, N0)
 
-        if torch.isnan(loss):
-            cprint("{} loss is nan".format(i), 'yellow')
+        if loss is -1 or torch.isnan(loss):
+            cprint("{} loss is invalid".format(i), 'yellow')
             continue
         elif loss > max_loss:
             cprint("{} loss is too high {:.5f}".format(i, loss), 'yellow')
@@ -147,8 +166,9 @@ def train_loop(args, dataset, epoch, iekf, optimizer, seq_dim):
             loss_train += loss
             cprint("{} loss: {:.5f}".format(i, loss))
 
-
-    loss_train.cuda().backward()
+    if loss_train == 0: 
+        return 
+    loss_train.backward()  # loss_train.cuda().backward()  
     g_norm = torch.nn.utils.clip_grad_norm_(iekf.parameters(), max_grad_norm)
     if np.isnan(g_norm) or g_norm > 3*max_grad_norm:
         cprint("gradient norm: {:.5f}".format(g_norm), 'yellow')
@@ -175,6 +195,8 @@ def mini_batch_step(dataset, dataset_name, iekf, list_rpe, t, ang_gt, p_gt, v_gt
                                                             v_gt, p_gt, t.shape[0],
                                                             ang_gt[0])
     delta_p, delta_p_gt = precompute_lost(Rot, p, list_rpe, N0)
+    if delta_p is None:
+        return -1
     loss = criterion(delta_p, delta_p_gt)
     return loss
 
@@ -240,7 +262,10 @@ def precompute_lost(Rot, p, list_rpe, N0):
     delta_p_gt = delta_p_gt[idxs]
     idxs_end_bis = idxs_end[idxs]
     idxs_0_bis = idxs_0[idxs]
-    delta_p = Rot_10_Hz[idxs_0_bis].transpose(-1, -2).matmul(
+    if len(idxs_0_bis) is 0: 
+        return None, None     
+    else:
+        delta_p = Rot_10_Hz[idxs_0_bis].transpose(-1, -2).matmul(
         (p_10_Hz[idxs_end_bis] - p_10_Hz[idxs_0_bis]).unsqueeze(-1)).squeeze()
-    distance = delta_p_gt.norm(dim=1).unsqueeze(-1)
-    return delta_p / distance, delta_p_gt / distance
+        distance = delta_p_gt.norm(dim=1).unsqueeze(-1)
+        return delta_p.double() / distance.double(), delta_p_gt.double() / distance.double() 
