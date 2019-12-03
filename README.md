@@ -36,9 +36,9 @@ git clone https://github.com/mbrossar/ai-imu-dr.git
 ```
 
 ### Testing
-1. Download reformated pickle format of the 00-11 KITTI IMU raw data at this [url](https://cloud.mines-paristech.fr/index.php/s/Si6JvnnBEf1k1MJ/download), extract and copy then in the `data` folder.
+1. Download reformated pickle format of the 00-11 KITTI IMU raw data at this [url](https://cloud.mines-paristech.fr/index.php/s/G9frEswwgKHhnr7/download), extract and copy then in the `data` folder.
 ```
-wget "https://cloud.mines-paristech.fr/index.php/s/Si6JvnnBEf1k1MJ/download"
+wget "https://cloud.mines-paristech.fr/index.php/s/G9frEswwgKHhnr7/download"
 mkdir ai-imu-dr/results
 unzip download -d ai-imu-dr
 rm download
