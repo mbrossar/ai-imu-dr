@@ -1,4 +1,4 @@
-# AI-IMU Dead-Reckoning [[paper]](https://cloud.mines-paristech.fr/index.php/s/8YDqD0Y1e6BWzCG)
+# AI-IMU Dead-Reckoning [[IEEE paper](https://ieeexplore.ieee.org/document/9035481), [ArXiv paper](https://arxiv.org/pdf/1904.06064.pdf)]
 
 _1.10%_ translational error on the [KITTI](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) odometry sequences with __only__ an Inertial Measurement Unit.
 
@@ -64,7 +64,7 @@ You can train for testing another sequence (we do not find difference in the res
 
 
 ## Paper
-The paper _AI-IMU Dead-Reckoning, M. Brossard, A. Barrau and S. Bonnabel. 2019_, relative to this repo is available at this [url](https://cloud.mines-paristech.fr/index.php/s/8YDqD0Y1e6BWzCG).
+The paper M. Brossard, A. Barrau and S. Bonnabel, "AI-IMU Dead-Reckoning," in _IEEE Transactions on Intelligent Vehicles_, 2020, relative to this repo is available at this [url](https://cloud.mines-paristech.fr/index.php/s/8YDqD0Y1e6BWzCG).
 
 
 ### Citation
@@ -74,8 +74,9 @@ If you use this code in your research, please cite:
 ```
 @article{brossard2019aiimu,
   author = {Martin Brossard and Axel Barrau and Silv\`ere Bonnabel},
+  journal={IEEE Transactions on Intelligent Vehicles}, 
   title = {{AI-IMU Dead-Reckoning}},
-  year = {2019}
+  year = {2020}
 }
 ```
 
