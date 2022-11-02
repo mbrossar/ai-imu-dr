@@ -72,8 +72,36 @@ class KITTIDataset(BaseDataset):
                                                                                      'wf, wl, wu, '
                                                                                      '' +
                             'pos_accuracy, vel_accuracy, ' + 'navstat, numsats, ' + 'posmode, '
-                                                                                  'velmode, '
-                                                                                  'orimode')
+                                                                                    'velmode, '
+                                                                                    'orimode')
+
+    ########### Training Materials ########################
+    # vn: velocity towards north (m/s)
+    # ve: velocity towards east (m/s)
+    # vu: upward velocity, i.e. perpendicular to earth-surface (m/s)
+    # ax: acceleration in x, i.e. in direction of vehicle front (m/s^2)
+    # ay: acceleration in y, i.e. in direction of vehicle left (m/s^2)
+    # az: acceleration in z, i.e. in direction of vehicle top (m/s^2)
+    # wx: angular rate around x (rad/s)
+    # wy: angular rate around y (rad/s)
+    # wz: angular rate around z (rad/s)
+    #######################################################
+    # vf: forward velocity, i.e. parallel to earth-surface (m/s)
+    # vl: leftward velocity, i.e. parallel to earth-surface (m/s)
+    # af: forward acceleration (m/s^2)
+    # al: leftward acceleration (m/s^2)
+    # au: upward acceleration (m/s^2)
+    # wf: angular rate around forward axis (rad/s)
+    # wl: angular rate around leftward axis (rad/s)
+    # wu: angular rate around upward axis (rad/s)
+    # pos_accuracy: velocity accuracy (north/east in m)
+    # vel_accuracy: velocity accuracy (north/east in m/s)
+    # navstat: navigation status (see navstat_to_string)
+    # numsats: number of satellites tracked by primary GPS receiver
+    # posmode: position mode of primary GPS receiver (see gps_mode_to_string)
+    # velmode: velocity mode of primary GPS receiver (see gps_mode_to_string)
+    # orimode: orientation mode of primary GPS receiver (see gps_mode_to_string)
+    ########################################################
 
     # Bundle into an easy-to-access structure
     OxtsData = namedtuple('OxtsData', 'packet, T_w_imu')
@@ -256,7 +284,20 @@ class KITTIDataset(BaseDataset):
                 mondict = {
                     't': t, 'p_gt': p_gt, 'ang_gt': ang_gt, 'v_gt': v_gt,
                     'u': u, 'name': date_dir2, 't0': t0
-                    }
+                }
+
+                # 'ang_gt': ground truth roll, pitch, yaw. size Nx3
+                # 'name': name of the sequence
+                # 'p_gt': ground truth position. size Nx3
+                # 'sm_gt': ground truth zero velocity and zero angular velocity. size Nx2
+                # 't': time. size N
+                # 't0': initial time
+                # 'u': imu inputs (gyro and accelerometer). size Nx6
+                # 'v_gt': ground truth velocity. size Nx3
+                #####################
+                # zero velocity indicates when the vehicle is stopped. It is a one-hot vector.
+                # Element 1 means the car is stopping and element 0 the car is moving.
+                # It is the same with zero angular velocity but for angular velocity.
 
                 t_tot += t[-1] - t[0]
                 KITTIDataset.dump(mondict, args.path_data_save, date_dir2)
@@ -434,15 +475,15 @@ def test_filter(args, dataset):
             continue
         print("Test filter on sequence: " + dataset_name)
         t, ang_gt, p_gt, v_gt, u = prepare_data(args, dataset, dataset_name, i,
-                                                       to_numpy=True)
+                                                to_numpy=True)
         N = None
         u_t = torch.from_numpy(u).double()
         measurements_covs = torch_iekf.forward_nets(u_t)
         measurements_covs = measurements_covs.detach().numpy()
         start_time = time.time()
         Rot, v, p, b_omega, b_acc, Rot_c_i, t_c_i = iekf.run(t, u, measurements_covs,
-                                                                   v_gt, p_gt, N,
-                                                                   ang_gt[0])
+                                                             v_gt, p_gt, N,
+                                                             ang_gt[0])
         diff_time = time.time() - start_time
         print("Execution time: {:.2f} s (sequence time: {:.2f} s)".format(diff_time,
                                                                           t[-1] - t[0]))
@@ -450,35 +491,34 @@ def test_filter(args, dataset):
             't': t, 'Rot': Rot, 'v': v, 'p': p, 'b_omega': b_omega, 'b_acc': b_acc,
             'Rot_c_i': Rot_c_i, 't_c_i': t_c_i,
             'measurements_covs': measurements_covs,
-            }
+        }
         dataset.dump(mondict, args.path_results, dataset_name + "_filter.p")
 
 
 class KITTIArgs():
-        path_data_base = "/media/mines/46230797-4d43-4860-9b76-ce35e699ea47/KITTI/raw"
-        path_data_save = "../data"
-        path_results = "../results"
-        path_temp = "../temp"
+    path_data_base = "/media/mines/46230797-4d43-4860-9b76-ce35e699ea47/KITTI/raw"
+    path_data_save = "../data"
+    path_results = "../results"
+    path_temp = "../temp"
 
-        epochs = 400
-        seq_dim = 6000
+    epochs = 400
+    seq_dim = 6000
 
-        # training, cross-validation and test dataset
-        cross_validation_sequences = ['2011_09_30_drive_0028_extract']
-        test_sequences = ['2011_09_30_drive_0028_extract']
-        continue_training = True
+    # training, cross-validation and test dataset
+    cross_validation_sequences = ['2011_09_30_drive_0028_extract']
+    test_sequences = ['2011_09_30_drive_0028_extract']
+    continue_training = False
 
-        # choose what to do
-        read_data = 0
-        train_filter = 0
-        test_filter = 1
-        results_filter = 1
-        dataset_class = KITTIDataset
-        parameter_class = KITTIParameters
+    # choose what to do
+    read_data = 0
+    train_filter = 0
+    test_filter = 1
+    results_filter = 1
+    dataset_class = KITTIDataset
+    parameter_class = KITTIParameters
 
 
 if __name__ == '__main__':
     args = KITTIArgs()
     dataset = KITTIDataset(args)
     launch(KITTIArgs)
-
