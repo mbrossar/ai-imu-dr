@@ -27,11 +27,11 @@ def launch(args):
     if args.train_filter:
         train_filter(args, dataset)
 
-    if args.test_filter:
-        test_filter(args, dataset)
+    # if args.test_filter:
+    #     test_filter(args, dataset)
 
-    if args.results_filter:
-        results_filter(args, dataset)
+    # if args.results_filter:
+    #     results_filter(args, dataset)
 
 
 class KITTIParameters(IEKF.Parameters):
@@ -511,7 +511,7 @@ class KITTIArgs():
 
     # choose what to do
     read_data = 0
-    train_filter = 0
+    train_filter = 1
     test_filter = 1
     results_filter = 1
     dataset_class = KITTIDataset
@@ -521,4 +521,12 @@ class KITTIArgs():
 if __name__ == '__main__':
     args = KITTIArgs()
     dataset = KITTIDataset(args)
+    # for i in range(0, len(dataset.datasets)):
+    #     dataset_name = dataset.dataset_name(i)
+    #     if dataset_name not in dataset.odometry_benchmark.keys():f
+    #         continue
+    #     print("Test filter on sequence: " + dataset_name)
+    #     t, ang_gt, p_gt, v_gt, u = prepare_data(args, dataset, dataset_name, i, to_numpy=True)
+    #     print(p_gt[1:100])
+    #     break
     launch(KITTIArgs)
