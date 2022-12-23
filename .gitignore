@@ -4,3 +4,10 @@ temp/delta_p.p
 temp/iekfnets.p
 temp/normalize_factors.p
 src/__pycache__
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
