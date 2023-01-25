@@ -1,6 +1,9 @@
 data/
 results/
-temp/delta_p.p
-temp/iekfnets.p
-temp/normalize_factors.p
+# temp/delta_p.p
+# temp/iekfnets.p
+# temp/normalize_factors.p
 src/__pycache__
+
+venv/
+.DS_Store
