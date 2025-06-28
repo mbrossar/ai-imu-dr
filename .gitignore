@@ -4,3 +4,38 @@ temp/delta_p.p
 temp/iekfnets.p
 temp/normalize_factors.p
 src/__pycache__
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.py[cod]
+*$py.class
+
+# Claude
+.claude/*
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+virtualenv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
